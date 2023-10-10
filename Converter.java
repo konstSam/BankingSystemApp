@@ -16,8 +16,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
-import BankingSystemApp.CustomExceptions.CurrencyNotSupportedException;
-
 public class Converter {
     public static BigDecimal[] getExchangeRates(BigDecimal amount, String sourceCurrency, String targetCurrency,
             Scanner scanner) {
