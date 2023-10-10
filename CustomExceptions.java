@@ -58,11 +58,3 @@ public class CustomExceptions {
     }
 
 }
-// public static String getCurrencyCheckException(Scanner scanner){
-// while (true){
-// try {
-// String inputString = scanner.next();
-
-// } catch
-// }
-// }

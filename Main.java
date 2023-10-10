@@ -120,13 +120,15 @@ public class Main {
                         BankAccount conversionAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to convert from. Enter the number that represents it: ",
                                 scanner);
+                        scanner.nextLine();
                         // Print information about the selected account
                         conversionAccount.getAccountDetails();
                         String sourceCurrency = conversionAccount.getCurrencyType();
                         System.out.printf("Your account is %s. Choose currency to convert (e.g. USD): ",
                                 sourceCurrency);
-                        String targetCurrency = scanner.next();
-                        scanner.nextLine();
+
+                        String targetCurrency = Converter.validateCurrency(scanner);
+
                         System.out.printf("Available Balance %s. Enter amount to convert: ",
                                 conversionAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         BigDecimal amount = CustomExceptions.getDecimalCheckException(scanner);
@@ -134,6 +136,7 @@ public class Main {
                                 scanner);
                         System.out.printf("Exchange rate: %.3f. Converted amount: %.3f %s", rates[0], rates[1],
                                 targetCurrency);
+
                         System.out.println("\nDo you want to proceed with the conversion?(Yes/No) ");
                         scanner.nextLine();
                         String response = scanner.nextLine();
@@ -148,7 +151,9 @@ public class Main {
                                 System.out.println("Available " + targetCurrency + " accounts to transfer: ");
                                 int j = 1;
                                 int lackOfAccount = 0;
+
                                 HashMap<Integer, BankAccount> curAccountsList = new HashMap<Integer, BankAccount>();
+
                                 for (BankAccount account : currentUser.getAccounts()) {
                                     if (account.getCurrencyType().equals(targetCurrency)) {
                                         System.out.println(
@@ -163,6 +168,7 @@ public class Main {
                                         lackOfAccount++;
                                     }
                                 }
+
                                 if (lackOfAccount == 0) {
                                     System.out.println("There is no " + targetCurrency
                                             + " account on your name. Please open a new one first.");
@@ -175,6 +181,7 @@ public class Main {
                                 BankAccount depAccount = curAccountsList.get(ans);
                                 conversionAccount.withdrawMoney(currentUser, conversionAccount, amount);
                                 depAccount.depositMoney(currentUser, depAccount, rates[1]);
+
                                 System.out.printf("\nAccount %s, New Balance: %.2f",
                                         conversionAccount.getAccountNumber(),
                                         conversionAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
@@ -214,6 +221,7 @@ public class Main {
 
                                 senderAccount.withdrawMoney(currentUser, senderAccount, transferAmount);
                                 receiverAccount.depositMoney(receiverUser, receiverAccount, transferAmount);
+
                                 System.out.printf("\nAccount %s, New Balance: %.2f",
                                         senderAccount.getAccountNumber(),
                                         senderAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
@@ -236,7 +244,7 @@ public class Main {
                     default:
                         System.out.println("Invalid option. Please choose a valid option.");
                 }
-                // scanner.close();
+
             }
 
         } catch (CustomExceptions.UserNotFoundException e) {
