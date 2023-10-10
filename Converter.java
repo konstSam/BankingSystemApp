@@ -12,7 +12,7 @@ import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import BankingSystem.src.CustomExceptions.CurrencyNotSupportedException;
+import BankingSystemApp.CustomExceptions.CurrencyNotSupportedException;
 
 public class Converter {
     public static BigDecimal[] getExchangeRates(BigDecimal amount, String sourceCurrency, String targetCurrency,

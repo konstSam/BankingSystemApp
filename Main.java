@@ -32,7 +32,7 @@ public class Main {
         user2.addAccount(account2_1);
         user2.addAccount(account2_2);
 
-        // Create User 2 and their accounts
+        // Create User 3 and their accounts
         User user3 = new User(3, "Maria");
         BankAccount account3_1 = new BankAccount(1215324, "EUR", "Savings", new BigDecimal("2100.11"));
         BankAccount account3_2 = new BankAccount(1223422, "EUR", "Checking", new BigDecimal("1343.22"));
@@ -243,6 +243,8 @@ public class Main {
             System.out.println(e.getMessage());
             scanner.close();
             return;
+        } finally {
+            scanner.close(); // Close the scanner in the finally block
         }
 
     }
