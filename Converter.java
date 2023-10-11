@@ -119,9 +119,4 @@ public class Converter {
         return null;
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        BigDecimal[] rates = getExchangeRates(new BigDecimal("2000"), "EUR", "USD", scanner);
-        System.out.println(rates[0] + " " + rates[1]);
-    }
 }
