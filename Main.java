@@ -2,6 +2,7 @@ package BankingSystemApp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Scanner;
 
 import BankingSystemApp.BankAccount.AccountAndUserName;
@@ -79,7 +80,8 @@ public class Main {
                 System.out.println("3. Check Balance");
                 System.out.println("4. Convert to another Currency");
                 System.out.println("5. Tranfer to another Account");
-                System.out.println("6. Exit");
+                System.out.println("6. Open new account");
+                System.out.println("7. Exit");
 
                 // int option = scanner.nextInt();
                 int option = CustomExceptions.getIntCheckException(scanner);
@@ -117,6 +119,14 @@ public class Main {
                         break;
 
                     case 3:
+                        System.out.println("Your Accounts: ");
+                        int k = 1;
+                        for (BankAccount account : currentUser.getAccounts()) {
+                            System.out.println(
+                                    account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
+                                            + account.getCurrencyType() + ") (" + k++
+                                            + ")");
+                        }
                         BankAccount checkAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to check its balance. Enter the number that represents it: ",
                                 scanner);
@@ -246,6 +256,18 @@ public class Main {
                         break;
 
                     case 6:
+                        Random random = new Random();
+                        System.out.println("Enter the currency type for your account: ");
+                        String currencytype = Converter.validateCurrency(scanner);
+                        System.out.println("Enter the account type for your account: ");
+                        String accounttype = scanner.nextLine();
+                        BankAccount account1 = new BankAccount(random.nextInt(100000), currencytype, accounttype,
+                                new BigDecimal("0"));
+                        currentUser.addAccount(account1);
+                        System.out.println("Account created successfully");
+                        break;
+
+                    case 7:
                         System.out.println("Thank you for using our banking system. Goodbye!");
                         scanner.close();
                         return;
