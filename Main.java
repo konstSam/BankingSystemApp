@@ -44,13 +44,22 @@ public class Main {
         eurobank.addUser(user2);
         eurobank.addUser(user3);
 
-        // Create a Scanner for user input
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter your username: ");
-        String username = scanner.nextLine();
-        // Find the user by username (assuming username is unique)
         try {
-            User currentUser = User.findByUsername(eurobank, username);
+            // Create a Scanner for user input
+            User currentUser = null;
+            boolean userExists = false;
+            while (!userExists) {
+                try {
+                    System.out.print("Enter your username: ");
+                    String username = scanner.nextLine();
+                    currentUser = User.findByUsername(eurobank, username);
+                    userExists = true;
+                } catch (CustomExceptions.UserNotFoundException e) {
+                    System.out.println(e.getMessage());
+
+                }
+            }
             // Display user's accounts
             System.out.println("Welcome, " + currentUser.getName() + "!");
             System.out.println("Your Accounts: ");
@@ -247,7 +256,7 @@ public class Main {
 
             }
 
-        } catch (CustomExceptions.UserNotFoundException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             scanner.close();
             return;
