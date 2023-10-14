@@ -1,6 +1,7 @@
 package BankingSystemApp;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -17,10 +18,25 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 public class Converter {
+    public static String readApiKeyFromFile(String filePath) throws IOException {
+        // Create a BufferedReader to read the file
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        try {
+            return reader.readLine(); // Read the API key from the file
+        } finally {
+            reader.close(); // Close the BufferedReader in a finally block
+        }
+    }
+
     public static BigDecimal[] getExchangeRates(BigDecimal amount, String sourceCurrency, String targetCurrency,
             Scanner scanner) {
         // Set the API key
-        String apiKey = "8da49a1d86d663e01bdd15d8";
+        String apiKey = "";
+        try {
+            apiKey = readApiKeyFromFile("BankingSystemApp\\apiKey.txt");
+        } catch (IOException e) {
+            System.out.println("Error reading API key from file: " + e.getMessage());
+        }
 
         // Define the API endpoint URL
         String apiUrl = "https://v6.exchangerate-api.com/v6/" + apiKey + "/pair/" + sourceCurrency + "/"
@@ -45,8 +61,12 @@ public class Converter {
     }
 
     public static String validateCurrency(Scanner scanner) {
-        String apiKey = "8da49a1d86d663e01bdd15d8";
-
+        String apiKey = null;
+        try {
+            apiKey = readApiKeyFromFile("BankingSystemApp\\apiKey.txt");
+        } catch (IOException e) {
+            System.out.println("Error reading API key from file: " + e.getMessage());
+        }
         // Define the API endpoint URL
         String apiURL = "https://v6.exchangerate-api.com/v6/" + apiKey + "/codes";
         StringBuilder jsonresponse = apiCall(apiURL);
