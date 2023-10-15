@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 public class Main {
     public static void main(String[] args) {
         // Create a bank
-        Bank eurobank = new Bank();
+        Bank eurobank = new Bank(1, "eurobank");
 
         // Create User 1 and their accounts
         User user1 = new User(1, "Kostas");

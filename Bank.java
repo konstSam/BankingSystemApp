@@ -6,9 +6,21 @@ import java.util.List;
 
 public class Bank {
     private ArrayList<User> users;
+    private int bankid;
+    private String name;
 
-    public Bank() {
+    public Bank(int bankid, String name) {
+        this.bankid = bankid;
+        this.name = name;
         this.users = new ArrayList<>();
+    }
+
+    public int getBankID() {
+        return this.bankid;
+    }
+
+    public String getBankName() {
+        return this.name;
     }
 
     public void addUser(User user) {

@@ -9,8 +9,8 @@ import BankingSystemApp.User;
 
 public class DatabaseUser {
 
-    public static void createUser(User user) {
-        try (Connection connection = DatabaseConnection.getConnection()) {
+    public static void createUser(Connection connection, User user) {
+        try {
             String query = "INSERT INTO users (userName) VALUES (?)";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, user.getName());
@@ -20,8 +20,8 @@ public class DatabaseUser {
         }
     }
 
-    public static User findUserByUsername(String username) {
-        try (Connection connection = DatabaseConnection.getConnection()) {
+    public static User findUserByUsername(Connection connection, String username) {
+        try {
             String query = "SELECT * FROM user WHERE userName = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
@@ -37,12 +37,4 @@ public class DatabaseUser {
         return null;
     }
 
-    public static void main(String[] args) {
-        User myuser = findUserByUsername("EMMA");
-        if (myuser != null) {
-            System.out.println(myuser.getUserID());
-        } else {
-            System.out.println("User not found");
-        }
-    }
 }

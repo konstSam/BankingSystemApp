@@ -1,3 +1,4 @@
+DROP DATABASE bankingsystem;
 -- Create the banking database
 CREATE DATABASE IF NOT EXISTS bankingsystem;
 
@@ -9,6 +10,11 @@ CREATE TABLE IF NOT EXISTS user (
     `userName` VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS bank (
+    `bankid` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255)
+);
+
 CREATE TABLE IF NOT EXISTS bankaccount (
     `accountNumber` INT(10) AUTO_INCREMENT PRIMARY KEY,
     `currencyType` VARCHAR(3),
@@ -18,11 +24,6 @@ CREATE TABLE IF NOT EXISTS bankaccount (
     `bankid` INT,
     FOREIGN KEY (`userid`) REFERENCES `user`(`userid`),
     FOREIGN KEY (`bankid`) REFERENCES `bank`(`bankid`)
-);
-
-CREATE TABLE IF NOT EXISTS bank (
-    `bankid` INT PRIMARY KEY,
-    `name` VARCHAR(255),
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
