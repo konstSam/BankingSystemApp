@@ -5,11 +5,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 import BankingSystemApp.User;
 import BankingSystemApp.Bank;
 import BankingSystemApp.BankAccount;
+import BankingSystemApp.CustomExceptions;
 
 public class DatabaseBankAccount {
     public static void createBankAccount(Connection connection, User user, String currencyType, String accountType,
@@ -68,14 +71,90 @@ public class DatabaseBankAccount {
         return null;
     }
 
-    public static void main(String[] args) {
-        String username = "kostas";
-        Connection connection = DatabaseConnection.getConnection();
-        User myuser = DatabaseUser.findUserByUsername(connection, username);
-        BankAccount currentAccount = loadBankAccount(connection, myuser, 79199);
-        if (currentAccount != null) {
-        } else {
-            System.out.println(" not found");
+    // Get a list of all account of a user
+    public static ArrayList<Integer> getListOfAccounts(User user, Connection connection) {
+        ArrayList<Integer> accountNumbers = new ArrayList<>();
+        try {
+            String query = "SELECT accountNumber FROM bankaccount WHERE userid = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, user.getUserID());
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int accountNumber = resultSet.getInt("accountNumber");
+                accountNumbers.add(accountNumber);
+            }
+
+            return accountNumbers;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // method that the user inputs an int that represents an account and it searches
+    // for that account if exists
+    public static Integer selectAccount(User user, ArrayList<Integer> accounts, String inputMessage,
+            Scanner scanner) {
+        int accountChoice = 0;
+        boolean validChoice = false;
+
+        while (!validChoice) {
+            System.out.print(inputMessage);
+            accountChoice = CustomExceptions.getIntCheckException(scanner);
+            if (accountChoice >= 1 && accountChoice <= accounts.size()) {
+                validChoice = true;
+            } else {
+                System.out.println("Invalid choice. Please select a valid account.");
+            }
+        }
+
+        return accounts.get(accountChoice - 1);
+    }
+
+    // Get all account of a specific user
+    public static void getAllUserAccounts(User user, Connection connection) {
+        // Display user's accounts
+        System.out.println("Welcome, " + user.getName() + "!");
+        System.out.println("Your Accounts: ");
+        int i = 1;
+        try {
+
+            String query = "SELECT * FROM bankaccount WHERE userid = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, user.getUserID());
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int accountnumber = resultSet.getInt("accountNumber");
+                String currencyType = resultSet.getString("currencyType");
+                String accountType = resultSet.getString("accountType");
+
+                System.out.println(
+                        accountType + " (Account Number: " + accountnumber
+                                + ", "
+                                + currencyType + ") (" + i++
+                                + ")");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        String username = "emma";
+        Connection connection = DatabaseConnection.getConnection();
+        User myuser = DatabaseUser.findUserByUsername(connection, username);
+        getAllUserAccounts(myuser, connection);
+
+        int myAccountNumber = selectAccount(myuser, getListOfAccounts(myuser, connection),
+                "\nChoose the account to transfer from. Enter the number that represents it:",
+                scanner);
+        BankAccount currentAccount = loadBankAccount(connection, myuser, myAccountNumber);
+        currentAccount.getAccountDetails();
+    }
+
 }

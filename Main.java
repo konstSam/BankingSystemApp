@@ -6,9 +6,13 @@ import java.util.Random;
 import java.util.Scanner;
 
 import BankingSystemApp.BankAccount.AccountAndUserName;
+import BankingSystemApp.database.DatabaseConnection;
+import BankingSystemApp.database.DatabaseUser;
+import BankingSystemApp.database.DatabaseBankAccount;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Connection;
 
 public class Main {
     public static void main(String[] args) {
@@ -120,19 +124,20 @@ public class Main {
 
                     case 3:
                         System.out.println("Your Accounts: ");
-                        int k = 1;
-                        for (BankAccount account : currentUser.getAccounts()) {
-                            System.out.println(
-                                    account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
-                                            + account.getCurrencyType() + ") (" + k++
-                                            + ")");
-                        }
-                        BankAccount checkAccount = chooseAccount(currentUser, currentUser.getAccounts(),
-                                "\nChoose the account to check its balance. Enter the number that represents it: ",
+                        Connection connection = DatabaseConnection.getConnection();
+                        User myuser = DatabaseUser.findUserByUsername(connection, "kostas");
+                        DatabaseBankAccount.getAllUserAccounts(myuser, connection);
+                        DatabaseBankAccount.getListOfAccounts(myuser, connection);
+
+                        int myAccountNumber = DatabaseBankAccount.selectAccount(myuser,
+                                DatabaseBankAccount.getListOfAccounts(myuser, connection),
+                                "\nChoose the account to transfer from. Enter the number that represents it:",
                                 scanner);
-                        // Print information about the selected account
-                        checkAccount.getAccountDetails();
-                        System.out.println("Balance: " + checkAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
+                        BankAccount currentAccount = DatabaseBankAccount.loadBankAccount(connection, myuser,
+                                myAccountNumber);
+                        currentAccount.getAccountDetails();
+                        System.out
+                                .println("Balance: " + currentAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         break;
 
                     case 4:
