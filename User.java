@@ -41,7 +41,7 @@ public class User {
                 return customer;
             }
         }
-        throw new CustomExceptions.UserNotFoundException("User not found. Exiting.");
+        throw new CustomExceptions.UserNotFoundException("User not found. Try again.");
     }
 
     static void displayUserAccountsInfo(User currentUser) {

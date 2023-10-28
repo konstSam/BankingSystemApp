@@ -16,65 +16,27 @@ import java.sql.Connection;
 
 public class Main {
     public static void main(String[] args) {
-        // Create a bank
         Bank eurobank = new Bank(1, "eurobank");
-
-        // Create User 1 and their accounts
-        User user1 = new User(1, "Kostas");
-        BankAccount account1_1 = new BankAccount(12345, "EUR", "Savings", new BigDecimal("1000"));
-        BankAccount account1_2 = new BankAccount(12243, "EUR", "Checking", new BigDecimal("200.44"));
-        BankAccount account1_3 = new BankAccount(12246, "USD", "Checking", new BigDecimal("0.44"));
-        BankAccount account1_4 = new BankAccount(12247, "USD", "Savings", new BigDecimal("400"));
-        user1.addAccount(account1_1);
-        user1.addAccount(account1_2);
-        user1.addAccount(account1_3);
-        user1.addAccount(account1_4);
-
-        // Create User 2 and their accounts
-        User user2 = new User(2, "Emma");
-        BankAccount account2_1 = new BankAccount(1215567, "EUR", "Savings", new BigDecimal("41000.64"));
-        BankAccount account2_2 = new BankAccount(12243542, "USD", "Checking", new BigDecimal("843.67"));
-        user2.addAccount(account2_1);
-        user2.addAccount(account2_2);
-
-        // Create User 3 and their accounts
-        User user3 = new User(3, "Maria");
-        BankAccount account3_1 = new BankAccount(1215324, "EUR", "Savings", new BigDecimal("2100.11"));
-        BankAccount account3_2 = new BankAccount(1223422, "EUR", "Checking", new BigDecimal("1343.22"));
-        user3.addAccount(account3_1);
-        user3.addAccount(account3_2);
-
-        // Add customers to the bank
-        eurobank.addUser(user1);
-        eurobank.addUser(user2);
-        eurobank.addUser(user3);
 
         Scanner scanner = new Scanner(System.in);
         try {
             // Create a Scanner for user input
             User currentUser = null;
+            Connection connection = DatabaseConnection.getConnection();
             boolean userExists = false;
             while (!userExists) {
-                try {
-                    System.out.print("Enter your username: ");
-                    String username = scanner.nextLine();
-                    currentUser = User.findByUsername(eurobank, username);
+                System.out.print("Enter your username: ");
+                String username = scanner.nextLine();
+                currentUser = DatabaseUser.findUserByUsername(connection, username);
+                if (currentUser != null) {
                     userExists = true;
-                } catch (CustomExceptions.UserNotFoundException e) {
-                    System.out.println(e.getMessage());
-
+                } else {
+                    System.out.println("User not found. Try again.");
                 }
             }
             // Display user's accounts
             System.out.println("Welcome, " + currentUser.getName() + "!");
-            System.out.println("Your Accounts: ");
-            int i = 1;
-            for (BankAccount account : currentUser.getAccounts()) {
-                System.out.println(
-                        account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
-                                + account.getCurrencyType() + ") (" + i++
-                                + ")");
-            }
+            DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
             boolean isRunning = true;
             // Provide options for transactions
             while (isRunning) {
@@ -93,9 +55,14 @@ public class Main {
                 scanner.nextLine();
 
                 switch (option) {
-                    case 1:
-                        BankAccount depositAccount = chooseAccount(currentUser, currentUser.getAccounts(),
-                                "\nChoose the account to deposit into. Enter the number that represents it: ", scanner);
+                    case 1: // DEPOSIT
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+                        int depositAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                "\nChoose the account to deposit into. Enter the number that represents it:",
+                                scanner);
+                        BankAccount depositAccount = DatabaseBankAccount.loadBankAccount(connection, currentUser,
+                                depositAccountNumber);
                         // Print information about the selected account
                         depositAccount.getAccountDetails();
 
@@ -103,11 +70,11 @@ public class Main {
                         BigDecimal depositAmount = CustomExceptions.getDecimalCheckException(scanner);
                         scanner.nextLine();
                         depositAccount.depositMoney(currentUser, depositAccount, depositAmount);
-                        System.out.println(
-                                "New Balance: " + depositAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
+                        DatabaseBankAccount.depositAmount(connection, depositAccountNumber, depositAmount);
                         break;
 
-                    case 2:
+                    case 2: // WITHDRAW
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
                         BankAccount withdrawAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to withraw. Enter the number that represents it: ", scanner);
 
@@ -122,25 +89,22 @@ public class Main {
                                 "New Balance: " + withdrawAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         break;
 
-                    case 3:
-                        System.out.println("Your Accounts: ");
-                        Connection connection = DatabaseConnection.getConnection();
-                        User myuser = DatabaseUser.findUserByUsername(connection, "kostas");
-                        DatabaseBankAccount.getAllUserAccounts(myuser, connection);
-                        DatabaseBankAccount.getListOfAccounts(myuser, connection);
+                    case 3: // CHECK BALANCE
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
 
-                        int myAccountNumber = DatabaseBankAccount.selectAccount(myuser,
-                                DatabaseBankAccount.getListOfAccounts(myuser, connection),
-                                "\nChoose the account to transfer from. Enter the number that represents it:",
+                        int checkAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                "\nChoose the account to check balance. Enter the number that represents it:",
                                 scanner);
-                        BankAccount currentAccount = DatabaseBankAccount.loadBankAccount(connection, myuser,
-                                myAccountNumber);
+                        BankAccount currentAccount = DatabaseBankAccount.loadBankAccount(connection, currentUser,
+                                checkAccountNumber);
                         currentAccount.getAccountDetails();
                         System.out
                                 .println("Balance: " + currentAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         break;
 
                     case 4:
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
                         BankAccount conversionAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to convert from. Enter the number that represents it: ",
                                 scanner);
@@ -296,7 +260,7 @@ public class Main {
     // method that the user inputs an int that represents an account and it searches
     // for that account if exists
     public static BankAccount chooseAccount(User user, ArrayList<BankAccount> accounts, String inputMessage,
-            Scanner scanner) {
+                                            Scanner scanner) {
         int accountChoice = 0;
         boolean validChoice = false;
 

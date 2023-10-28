@@ -1,6 +1,7 @@
 package BankingSystemApp.database;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,14 +38,27 @@ public class DatabaseBankAccount {
         }
     }
 
-    public static void updateBalance(Connection connection, int accountNumber, BigDecimal balance) {
+    public static void depositAmount(Connection connection, int accountNumber, BigDecimal amount) {
         try {
-            String query = "UPDATE bankaccount SET balance = ? WHERE accountNumber = ?";
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("\nInvalid deposit amount");
+                return; // Exit the method if the deposit amount is invalid
+            }
+
+            String query = "UPDATE bankaccount SET balance = balance + ? WHERE accountNumber = ?";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setBigDecimal(1, balance);
+            statement.setBigDecimal(1, amount);
             statement.setInt(2, accountNumber);
             statement.executeUpdate();
-            System.out.println("New balance: " + balance);
+            String query2 = "SELECT balance FROM bankaccount WHERE accountNumber = ?";
+            PreparedStatement statement2 = connection.prepareStatement(query2);
+            statement2.setInt(1, accountNumber);
+            ResultSet resultSet = statement2.executeQuery();
+            if (resultSet.next()) {
+                BigDecimal balance = resultSet.getBigDecimal("balance");
+                System.out.println(
+                        "New Balance: " + balance.setScale(2, RoundingMode.HALF_UP));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,7 +85,7 @@ public class DatabaseBankAccount {
         return null;
     }
 
-    // Get a list of all account of a user
+    // Get and return a list of all accounts of a user
     public static ArrayList<Integer> getListOfAccounts(User user, Connection connection) {
         ArrayList<Integer> accountNumbers = new ArrayList<>();
         try {
@@ -113,9 +127,8 @@ public class DatabaseBankAccount {
     }
 
     // Get all account of a specific user
-    public static void getAllUserAccounts(User user, Connection connection) {
+    public static void displayAllUserAccounts(User user, Connection connection) {
         // Display user's accounts
-        System.out.println("Welcome, " + user.getName() + "!");
         System.out.println("Your Accounts: ");
         int i = 1;
         try {
@@ -140,21 +153,6 @@ public class DatabaseBankAccount {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-
-        String username = "emma";
-        Connection connection = DatabaseConnection.getConnection();
-        User myuser = DatabaseUser.findUserByUsername(connection, username);
-        getAllUserAccounts(myuser, connection);
-
-        int myAccountNumber = selectAccount(myuser, getListOfAccounts(myuser, connection),
-                "\nChoose the account to transfer from. Enter the number that represents it:",
-                scanner);
-        BankAccount currentAccount = loadBankAccount(connection, myuser, myAccountNumber);
-        currentAccount.getAccountDetails();
     }
 
 }
