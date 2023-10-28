@@ -63,14 +63,7 @@ public class Main {
             }
             // Display user's accounts
             System.out.println("Welcome, " + currentUser.getName() + "!");
-            System.out.println("Your Accounts: ");
-            int i = 1;
-            for (BankAccount account : currentUser.getAccounts()) {
-                System.out.println(
-                        account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
-                                + account.getCurrencyType() + ") (" + i++
-                                + ")");
-            }
+            User.displayUserAccountsInfo(currentUser);
             boolean isRunning = true;
             // Provide options for transactions
             while (isRunning) {
@@ -89,7 +82,8 @@ public class Main {
                 scanner.nextLine();
 
                 switch (option) {
-                    case 1:
+                    case 1: // DEPOSIT
+                        User.displayUserAccountsInfo(currentUser);
                         BankAccount depositAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to deposit into. Enter the number that represents it: ", scanner);
                         // Print information about the selected account
@@ -103,7 +97,8 @@ public class Main {
                                 "New Balance: " + depositAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         break;
 
-                    case 2:
+                    case 2: // WITHDRAW
+                        User.displayUserAccountsInfo(currentUser);
                         BankAccount withdrawAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to withraw. Enter the number that represents it: ", scanner);
 
@@ -118,15 +113,8 @@ public class Main {
                                 "New Balance: " + withdrawAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         break;
 
-                    case 3:
-                        System.out.println("Your Accounts: ");
-                        int k = 1;
-                        for (BankAccount account : currentUser.getAccounts()) {
-                            System.out.println(
-                                    account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
-                                            + account.getCurrencyType() + ") (" + k++
-                                            + ")");
-                        }
+                    case 3: // CHECK BALANCE
+                        User.displayUserAccountsInfo(currentUser);
                         BankAccount checkAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to check its balance. Enter the number that represents it: ",
                                 scanner);
@@ -135,7 +123,8 @@ public class Main {
                         System.out.println("Balance: " + checkAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         break;
 
-                    case 4:
+                    case 4: // CONVERT CURRENCY
+                        User.displayUserAccountsInfo(currentUser);
                         BankAccount conversionAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to convert from. Enter the number that represents it: ",
                                 scanner);
@@ -210,7 +199,8 @@ public class Main {
                         }
                         break;
 
-                    case 5:
+                    case 5: // TRANSFER INTO ANTOTHER ACCOUNT
+                        User.displayUserAccountsInfo(currentUser);
                         BankAccount senderAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to transfer from. Enter the number that represents it: ",
                                 scanner);
@@ -233,7 +223,7 @@ public class Main {
                             String receiverName = receiverDetails.getUserName();
                             System.out.println("Found account with Username: " + receiverName);
 
-                            if (senderAccount.getBalance().compareTo(transferAmount) <= 0) {
+                            if (senderAccount.getBalance().compareTo(transferAmount) < 0) {
                                 System.out.println("Not enough money in your balance.");
                                 break;
                             } else {
@@ -255,7 +245,7 @@ public class Main {
 
                         break;
 
-                    case 6:
+                    case 6: // CREATE NEW ACCOUNT
                         Random random = new Random();
                         System.out.println("Enter the currency type for your account: ");
                         String currencytype = Converter.validateCurrency(scanner);
@@ -267,7 +257,7 @@ public class Main {
                         System.out.println("Account created successfully");
                         break;
 
-                    case 7:
+                    case 7: // EXIT
                         System.out.println("Thank you for using our banking system. Goodbye!");
                         scanner.close();
                         return;

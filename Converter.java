@@ -33,7 +33,7 @@ public class Converter {
         // Set the API key
         String apiKey = "";
         try {
-            apiKey = readApiKeyFromFile("BankingSystemApp\\apiKey.txt");
+            apiKey = readApiKeyFromFile("C:\\Users\\konst\\IdeaProjects\\BankingSystemApp\\apiKey.txt");
         } catch (IOException e) {
             System.out.println("Error reading API key from file: " + e.getMessage());
         }
@@ -63,7 +63,7 @@ public class Converter {
     public static String validateCurrency(Scanner scanner) {
         String apiKey = null;
         try {
-            apiKey = readApiKeyFromFile("BankingSystemApp\\apiKey.txt");
+            apiKey = readApiKeyFromFile("C:\\Users\\konst\\IdeaProjects\\BankingSystemApp\\apiKey.txt");
         } catch (IOException e) {
             System.out.println("Error reading API key from file: " + e.getMessage());
         }

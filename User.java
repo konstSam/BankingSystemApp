@@ -41,7 +41,18 @@ public class User {
                 return customer;
             }
         }
-        throw new CustomExceptions.UserNotFoundException("User not found. Exiting.");
+        throw new CustomExceptions.UserNotFoundException("User not found. Try again.");
+    }
+
+    static void displayUserAccountsInfo(User currentUser) {
+        System.out.println("Your Accounts: ");
+        int k = 1;
+        for (BankAccount account : currentUser.getAccounts()) {
+            System.out.println(
+                    account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
+                            + account.getCurrencyType() + ") (" + k++
+                            + ")");
+        }
     }
 
 }
