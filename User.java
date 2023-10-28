@@ -44,4 +44,15 @@ public class User {
         throw new CustomExceptions.UserNotFoundException("User not found. Exiting.");
     }
 
+    static void displayUserAccountsInfo(User currentUser) {
+        System.out.println("Your Accounts: ");
+        int k = 1;
+        for (BankAccount account : currentUser.getAccounts()) {
+            System.out.println(
+                    account.getAccountType() + " (Account Number: " + account.getAccountNumber() + ", "
+                            + account.getCurrencyType() + ") (" + k++
+                            + ")");
+        }
+    }
+
 }
