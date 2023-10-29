@@ -17,7 +17,7 @@ import BankingSystemApp.CustomExceptions;
 
 public class DatabaseBankAccount {
     public static boolean createBankAccount(Connection connection, User user, String currencyType, String accountType,
-                                         Bank bank) {
+                                            Bank bank) {
         try {
             Random random = new Random();
             String query = "INSERT INTO bankaccount (accountNumber, currencyType, accountType, balance, userid, bankid) "
@@ -111,12 +111,18 @@ public class DatabaseBankAccount {
     }
 
     // Get and return a list of all accounts of a user
-    public static ArrayList<Integer> getListOfAccounts(User user, Connection connection) {
+    public static ArrayList<Integer> getListOfAccounts(User user, Connection connection, String targetCurrency) {
         ArrayList<Integer> accountNumbers = new ArrayList<>();
+        String query = "SELECT accountNumber FROM bankaccount WHERE userid = ?";
         try {
-            String query = "SELECT accountNumber FROM bankaccount WHERE userid = ?";
+            if (!targetCurrency.equals("full")) {
+                query += " AND currencyType = ?";
+            }
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, user.getUserID());
+            if (!targetCurrency.equals("full")) {
+                statement.setString(2, targetCurrency);
+            }
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -152,15 +158,21 @@ public class DatabaseBankAccount {
     }
 
     // Get all account of a specific user
-    public static void displayAllUserAccounts(User user, Connection connection) {
+    public static void displayAllUserAccounts(User user, Connection connection, String targetCurrency) {
         // Display user's accounts
         System.out.println("Your Accounts: ");
+        String query = "SELECT * FROM bankaccount WHERE userid = ?";
         int i = 1;
         try {
+            if (!targetCurrency.equals("full")) {
+                query += " AND currencyType = ?";
+            }
 
-            String query = "SELECT * FROM bankaccount WHERE userid = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, user.getUserID());
+            if (!targetCurrency.equals("full")) {
+                statement.setString(2, targetCurrency);
+            }
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -175,9 +187,21 @@ public class DatabaseBankAccount {
                                 + ")");
             }
 
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    public static boolean hasResults(Connection connection) {
+        try {
+            String checkQuery = "SELECT 1";
+            PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+            ResultSet checkResultSet = checkStatement.executeQuery();
+            return checkResultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

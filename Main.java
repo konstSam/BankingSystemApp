@@ -37,7 +37,7 @@ public class Main {
             }
             // Display user's accounts
             System.out.println("Welcome, " + currentUser.getName() + "!");
-            DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+            DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
             boolean isRunning = true;
             // Provide options for transactions
             while (isRunning) {
@@ -57,9 +57,9 @@ public class Main {
 
                 switch (option) {
                     case 1: // DEPOSIT
-                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
                         int depositAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
-                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to deposit into. Enter the number that represents it:",
                                 scanner);
                         BankAccount depositAccount = DatabaseBankAccount.loadBankAccount(connection,
@@ -81,9 +81,9 @@ public class Main {
                         break;
 
                     case 2: // WITHDRAW
-                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
                         int withdrawAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
-                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to withraw. Enter the number that represents it:",
                                 scanner);
                         BankAccount withdrawAccount = DatabaseBankAccount.loadBankAccount(connection,
@@ -106,10 +106,10 @@ public class Main {
 
 
                     case 3: // CHECK BALANCE
-                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
 
                         int checkAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
-                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to check balance. Enter the number that represents it:",
                                 scanner);
                         BankAccount currentAccount = DatabaseBankAccount.loadBankAccount(connection,
@@ -120,16 +120,16 @@ public class Main {
                         break;
 
                     case 4: // CONVERT CURRENCY
-                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
-
-
-                        BankAccount conversionAccount = chooseAccount(currentUser, currentUser.getAccounts(),
-                                "\nChoose the account to convert from. Enter the number that represents it: ",
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
+                        int conversionAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
+                                "\nChoose the account to convert from. Enter the number that represents it:",
                                 scanner);
                         scanner.nextLine();
+                        BankAccount conversionAccount = DatabaseBankAccount.loadBankAccount(connection,
+                                conversionAccountNumber);
                         // Print information about the selected account
                         conversionAccount.getAccountDetails();
-
 
                         String sourceCurrency = conversionAccount.getCurrencyType();
                         System.out.printf("Your account is %s. Choose currency to convert (e.g. USD): ",
@@ -157,52 +157,36 @@ public class Main {
                                 break;
                             } else {
                                 System.out.println("Available " + targetCurrency + " accounts to transfer: ");
-                                int j = 1;
-                                int lackOfAccount = 0;
+                                DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, targetCurrency);
+                                boolean resultsExist = DatabaseBankAccount.hasResults(connection);
 
-                                HashMap<Integer, BankAccount> curAccountsList = new HashMap<Integer, BankAccount>();
-
-                                for (BankAccount account : currentUser.getAccounts()) {
-                                    if (account.getCurrencyType().equals(targetCurrency)) {
-                                        System.out.println(
-                                                account.getAccountType() + " (Account Number: "
-                                                        + account.getAccountNumber()
-                                                        + ", "
-                                                        + account.getCurrencyType() + ") (" + j
-                                                        + ")");
-                                        // Add the matching account to the ArrayList
-                                        curAccountsList.put(j, account);
-                                        j++;
-                                        lackOfAccount++;
-                                    }
-                                }
-
-                                if (lackOfAccount == 0) {
+                                if (!resultsExist) {
                                     System.out.println("There is no " + targetCurrency
                                             + " account on your name. Please open a new one first.");
                                     break;
                                 }
-                                System.out.println("\nSelect account to transfer(e.g. 2): ");
-                                int ans = CustomExceptions.getIntCheckException(scanner);
-                                scanner.nextLine();
 
-                                BankAccount depAccount = curAccountsList.get(ans);
-                                conversionAccount.withdrawMoney(currentUser, conversionAccount, amount);
-                                depAccount.depositMoney(currentUser, depAccount, rates[1]);
+                                int convertedAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                        DatabaseBankAccount.getListOfAccounts(currentUser, connection, targetCurrency),
+                                        "\nSelect account to transfer: ",
+                                        scanner);
 
-                                System.out.printf("\nAccount %s, New Balance: %.2f",
-                                        conversionAccount.getAccountNumber(),
-                                        conversionAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
-                                System.out.printf("\nAccount %s, New Balance: %.2f\n", depAccount.getAccountNumber(),
-                                        depAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
+                                boolean conversion = DatabaseBankAccount.withdrawAmount(connection, conversionAccount, conversionAccountNumber, amount);
+                                if (conversion) {
+                                    System.out.println("Withdrawn " + amount.toPlainString() + " " + conversionAccount.getCurrencyType());
+                                    boolean converted = DatabaseBankAccount.depositAmount(connection, conversionAccount, convertedAccountNumber, rates[1]);
+                                    System.out.println(converted ? "Transfer was successful!" : "Transfer failed.");
+                                    System.out.printf("Converted %.3f %s to %.3f %s with Exchange rate: %.3f ", amount, conversionAccount.getCurrencyType(), rates[1],
+                                            targetCurrency, rates[0]);
+                                }
                             }
                         }
                         break;
 
                     case 5: // TRANSFER TO ANOTHER ACCOUNT
-                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
                         int senderAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
-                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to transfer from. Enter the number that represents it:",
                                 scanner);
                         BankAccount senderAccount = DatabaseBankAccount.loadBankAccount(connection,
@@ -255,7 +239,7 @@ public class Main {
                         String accounttype = scanner.nextLine();
 
                         Bank currentBank = DatabaseBank.findBankByUser(connection, currentUser);
-                        boolean created = DatabaseBankAccount.createBankAccount(connection, currentUser, currencytype,accounttype,currentBank);
+                        boolean created = DatabaseBankAccount.createBankAccount(connection, currentUser, currencytype, accounttype, currentBank);
                         System.out.println(created ? "New account created successfully!" : "Error creating new account.");
                         break;
 
