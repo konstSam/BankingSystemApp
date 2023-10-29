@@ -37,4 +37,23 @@ public class DatabaseUser {
         return null;
     }
 
+    public static String findUserByAccountNumber(Connection connection, int accountNumber) {
+        try {
+            String query = "SELECT userName FROM user " +
+                           "JOIN bankaccount b on b.userid=user.userid " +
+                           "WHERE b.accountNumber = ?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, accountNumber);
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("userName");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }

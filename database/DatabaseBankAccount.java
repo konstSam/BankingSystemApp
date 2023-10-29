@@ -17,7 +17,7 @@ import BankingSystemApp.CustomExceptions;
 
 public class DatabaseBankAccount {
     public static void createBankAccount(Connection connection, User user, String currencyType, String accountType,
-            Bank bank) {
+                                         Bank bank) {
         try {
             Random random = new Random();
             String query = "INSERT INTO bankaccount (accountNumber, currencyType, accountType, balance, userid, bankid) "
@@ -38,77 +38,63 @@ public class DatabaseBankAccount {
         }
     }
 
-    public static void depositAmount(Connection connection, BankAccount depositAccount, int accountNumber, BigDecimal amount) {
+    public static boolean depositAmount(Connection connection, BankAccount depositAccount, int accountNumber, BigDecimal amount) {
         try {
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("\nInvalid deposit amount");
-                return; // Exit the method if the deposit amount is invalid
+                return false; // Exit the method if the deposit amount is invalid
             }
 
             String query = "UPDATE bankaccount SET balance = balance + ? WHERE accountNumber = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setBigDecimal(1, amount);
             statement.setInt(2, accountNumber);
-            statement.executeUpdate();
-            String query2 = "SELECT balance FROM bankaccount WHERE accountNumber = ?";
-            PreparedStatement statement2 = connection.prepareStatement(query2);
-            statement2.setInt(1, accountNumber);
-            ResultSet resultSet = statement2.executeQuery();
-            if (resultSet.next()) {
-                BigDecimal balance = resultSet.getBigDecimal("balance");
-                System.out.println(
-                        "New Balance: " + balance.setScale(2, RoundingMode.HALF_UP)+ " " + depositAccount.getCurrencyType());
-            }
+            return statement.executeUpdate() > 0;
+
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public static void withdrawAmount(Connection connection, BankAccount withdrawAccount, int accountNumber, BigDecimal amount) {
+    public static boolean withdrawAmount(Connection connection, BankAccount withdrawAccount, int accountNumber, BigDecimal amount) {
         try {
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("\nInvalid deposit amount");
-                return; // Exit the method if the deposit amount is invalid
+                return false; // Exit the method if the deposit amount is invalid
             }
 
             BigDecimal currentBalance = withdrawAccount.getBalance();
             if (currentBalance.compareTo(amount) >= 0) {
                 String query = "UPDATE bankaccount " +
-                               "SET balance = CASE " +
-                               "WHEN (balance >= ?) THEN (balance - ?) " +
-                               "ELSE balance " +
-                               "END " +
-                               "WHERE accountNumber = ?;";
+                        "SET balance = CASE " +
+                        "WHEN (balance >= ?) THEN (balance - ?) " +
+                        "ELSE balance " +
+                        "END " +
+                        "WHERE accountNumber = ?;";
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setBigDecimal(1, amount);
                 statement.setBigDecimal(2, amount);
                 statement.setInt(3, accountNumber);
-                statement.executeUpdate();
-                String query2 = "SELECT balance FROM bankaccount WHERE accountNumber = ?";
-                PreparedStatement statement2 = connection.prepareStatement(query2);
-                statement2.setInt(1, accountNumber);
-                ResultSet resultSet = statement2.executeQuery();
-                if (resultSet.next()) {
-                    BigDecimal balance = resultSet.getBigDecimal("balance");
-                    System.out.println(
-                            "New Balance: " + balance.setScale(2, RoundingMode.HALF_UP) + " " +withdrawAccount.getCurrencyType());
-                }
+                return statement.executeUpdate() > 0;
+
             } else {
                 System.out.println("Not enough money in your balance.\n");
+                return false;
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
     // Load a bank account from the database based on the account number
-    public static BankAccount loadBankAccount(Connection connection, User user, int accountNumber) {
+    public static BankAccount loadBankAccount(Connection connection, int accountNumber) {
         try {
-            String query = "SELECT * FROM bankaccount WHERE userid = ? AND accountNumber = ?";
+            String query = "SELECT * FROM bankaccount WHERE accountNumber = ?";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, user.getUserID());
-            statement.setInt(2, accountNumber);
+            statement.setInt(1, accountNumber);
 
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -147,7 +133,7 @@ public class DatabaseBankAccount {
     // method that the user inputs an int that represents an account and it searches
     // for that account if exists
     public static Integer selectAccount(User user, ArrayList<Integer> accounts, String inputMessage,
-            Scanner scanner) {
+                                        Scanner scanner) {
         int accountChoice = 0;
         boolean validChoice = false;
 
