@@ -61,6 +61,7 @@ public class Main {
                         BankAccount depositAccount = DatabaseBankAccount.loadBankAccount(connection,
                                 depositAccountNumber);
                         // Print information about the selected account
+                        assert depositAccount != null;
                         depositAccount.getAccountDetails();
 
                         System.out.print("\nEnter the amount to deposit: ");
@@ -69,6 +70,7 @@ public class Main {
                         boolean deposited = DatabaseBankAccount.depositAmount(connection, depositAccountNumber, depositAmount);
                         if (deposited) {
                             depositAccount = DatabaseBankAccount.loadBankAccount(connection, depositAccountNumber);
+                            assert depositAccount != null;
                             System.out.println(
                                     "New Balance: " + depositAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + depositAccount.getCurrencyType());
                         } else {
@@ -85,6 +87,7 @@ public class Main {
                         BankAccount withdrawAccount = DatabaseBankAccount.loadBankAccount(connection,
                                 withdrawAccountNumber);
                         // Print information about the selected account
+                        assert withdrawAccount != null;
                         withdrawAccount.getAccountDetails();
 
                         System.out.print("\nEnter the amount to withdraw: ");
@@ -93,6 +96,7 @@ public class Main {
                         boolean withdrawn = DatabaseBankAccount.withdrawAmount(connection, withdrawAccount, withdrawAccountNumber, withdrawalAmount);
                         if (withdrawn) {
                             withdrawAccount = DatabaseBankAccount.loadBankAccount(connection, withdrawAccountNumber);
+                            assert withdrawAccount != null;
                             System.out.println(
                                     "New Balance: " + withdrawAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + withdrawAccount.getCurrencyType());
                         } else {
@@ -110,6 +114,7 @@ public class Main {
                                 scanner);
                         BankAccount currentAccount = DatabaseBankAccount.loadBankAccount(connection,
                                 checkAccountNumber);
+                        assert currentAccount != null;
                         currentAccount.getAccountDetails();
                         System.out
                                 .println("Balance: " + currentAccount.checkBalance().setScale(2, RoundingMode.HALF_UP) + " " + currentAccount.getCurrencyType());
@@ -125,6 +130,7 @@ public class Main {
                         BankAccount conversionAccount = DatabaseBankAccount.loadBankAccount(connection,
                                 conversionAccountNumber);
                         // Print information about the selected account
+                        assert conversionAccount != null;
                         conversionAccount.getAccountDetails();
 
                         String sourceCurrency = conversionAccount.getCurrencyType();
@@ -145,7 +151,7 @@ public class Main {
                         scanner.nextLine();
                         String response = scanner.nextLine();
 
-                        // list the available accounts having targetcurrency
+                        // list the available accounts having target currency
                         if (response.equalsIgnoreCase("yes")) {
 
                             if (conversionAccount.getBalance().compareTo(amount) <= 0) {
@@ -153,6 +159,7 @@ public class Main {
                                 break;
                             } else {
                                 System.out.println("Available " + targetCurrency + " accounts to transfer: ");
+                                assert targetCurrency != null;
                                 DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, targetCurrency);
                                 boolean resultsExist = DatabaseBankAccount.hasResults(connection);
 
@@ -188,6 +195,7 @@ public class Main {
                         BankAccount senderAccount = DatabaseBankAccount.loadBankAccount(connection,
                                 senderAccountNumber);
                         // Print information about the selected account
+                        assert senderAccount != null;
                         senderAccount.getAccountDetails();
                         System.out.println("Available balance: " + senderAccount.getBalance() + " " + senderAccount.getCurrencyType());
 
@@ -214,6 +222,7 @@ public class Main {
                                 boolean ok = DatabaseBankAccount.withdrawAmount(connection, senderAccount, senderAccountNumber, transferAmount);
                                 if (ok) {
                                     senderAccount = DatabaseBankAccount.loadBankAccount(connection, senderAccountNumber);
+                                    assert senderAccount != null;
                                     System.out.println(
                                             "New Balance: " + senderAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + senderAccount.getCurrencyType());
                                 }
@@ -235,6 +244,7 @@ public class Main {
                         String accounttype = scanner.nextLine();
 
                         Bank currentBank = DatabaseBank.findBankByUser(connection, currentUser);
+                        assert currentBank != null;
                         boolean created = DatabaseBankAccount.createBankAccount(connection, currentUser, currencytype, accounttype, currentBank);
                         System.out.println(created ? "New account created successfully!" : "Error creating new account.");
                         break;

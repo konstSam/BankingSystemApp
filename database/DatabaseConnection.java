@@ -20,7 +20,7 @@ public class DatabaseConnection {
         return connection;
     }
 
-    public static void closeConnection() {
+    public static void closeConnection(Connection connection) {
         if (connection != null) {
             try {
                 connection.close();
