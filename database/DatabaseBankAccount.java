@@ -38,7 +38,7 @@ public class DatabaseBankAccount {
         }
     }
 
-    public static void depositAmount(Connection connection, int accountNumber, BigDecimal amount) {
+    public static void depositAmount(Connection connection, BankAccount depositAccount, int accountNumber, BigDecimal amount) {
         try {
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("\nInvalid deposit amount");
@@ -57,8 +57,46 @@ public class DatabaseBankAccount {
             if (resultSet.next()) {
                 BigDecimal balance = resultSet.getBigDecimal("balance");
                 System.out.println(
-                        "New Balance: " + balance.setScale(2, RoundingMode.HALF_UP));
+                        "New Balance: " + balance.setScale(2, RoundingMode.HALF_UP)+ " " + depositAccount.getCurrencyType());
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void withdrawAmount(Connection connection, BankAccount withdrawAccount, int accountNumber, BigDecimal amount) {
+        try {
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("\nInvalid deposit amount");
+                return; // Exit the method if the deposit amount is invalid
+            }
+
+            BigDecimal currentBalance = withdrawAccount.getBalance();
+            if (currentBalance.compareTo(amount) >= 0) {
+                String query = "UPDATE bankaccount " +
+                               "SET balance = CASE " +
+                               "WHEN (balance >= ?) THEN (balance - ?) " +
+                               "ELSE balance " +
+                               "END " +
+                               "WHERE accountNumber = ?;";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setBigDecimal(1, amount);
+                statement.setBigDecimal(2, amount);
+                statement.setInt(3, accountNumber);
+                statement.executeUpdate();
+                String query2 = "SELECT balance FROM bankaccount WHERE accountNumber = ?";
+                PreparedStatement statement2 = connection.prepareStatement(query2);
+                statement2.setInt(1, accountNumber);
+                ResultSet resultSet = statement2.executeQuery();
+                if (resultSet.next()) {
+                    BigDecimal balance = resultSet.getBigDecimal("balance");
+                    System.out.println(
+                            "New Balance: " + balance.setScale(2, RoundingMode.HALF_UP) + " " +withdrawAccount.getCurrencyType());
+                }
+            } else {
+                System.out.println("Not enough money in your balance.\n");
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

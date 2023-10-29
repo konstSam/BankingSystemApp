@@ -69,24 +69,24 @@ public class Main {
                         System.out.print("\nEnter the amount to deposit: ");
                         BigDecimal depositAmount = CustomExceptions.getDecimalCheckException(scanner);
                         scanner.nextLine();
-                        depositAccount.depositMoney(currentUser, depositAccount, depositAmount);
-                        DatabaseBankAccount.depositAmount(connection, depositAccountNumber, depositAmount);
+                        DatabaseBankAccount.depositAmount(connection, depositAccount, depositAccountNumber, depositAmount);
                         break;
 
                     case 2: // WITHDRAW
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
-                        BankAccount withdrawAccount = chooseAccount(currentUser, currentUser.getAccounts(),
-                                "\nChoose the account to withraw. Enter the number that represents it: ", scanner);
-
+                        int withdrawAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                "\nChoose the account to withraw. Enter the number that represents it:",
+                                scanner);
+                        BankAccount withdrawAccount = DatabaseBankAccount.loadBankAccount(connection, currentUser,
+                                withdrawAccountNumber);
                         // Print information about the selected account
                         withdrawAccount.getAccountDetails();
 
                         System.out.print("\nEnter the amount to withdraw: ");
                         BigDecimal withdrawalAmount = CustomExceptions.getDecimalCheckException(scanner);
                         scanner.nextLine();
-                        withdrawAccount.withdrawMoney(currentUser, withdrawAccount, withdrawalAmount);
-                        System.out.println(
-                                "New Balance: " + withdrawAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
+                        DatabaseBankAccount.withdrawAmount(connection, withdrawAccount, withdrawAccountNumber, withdrawalAmount);
                         break;
 
                     case 3: // CHECK BALANCE
@@ -100,7 +100,7 @@ public class Main {
                                 checkAccountNumber);
                         currentAccount.getAccountDetails();
                         System.out
-                                .println("Balance: " + currentAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
+                                .println("Balance: " + currentAccount.checkBalance().setScale(2, RoundingMode.HALF_UP) + " " + currentAccount.getCurrencyType());
                         break;
 
                     case 4:
@@ -179,14 +179,18 @@ public class Main {
                         }
                         break;
 
-                    case 5:
-                        BankAccount senderAccount = chooseAccount(currentUser, currentUser.getAccounts(),
-                                "\nChoose the account to transfer from. Enter the number that represents it: ",
+                    case 5: // TRANSFER TO ANOTHER ACCOUNT
+                        DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+                        int senderAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                DatabaseBankAccount.getListOfAccounts(currentUser, connection),
+                                "\nChoose the account to transfer from. Enter the number that represents it:",
                                 scanner);
-
+                        BankAccount senderAccount = DatabaseBankAccount.loadBankAccount(connection, currentUser,
+                                senderAccountNumber);
                         // Print information about the selected account
                         senderAccount.getAccountDetails();
-                        senderAccount.getBalance();
+                        System.out.println(senderAccount.getBalance());
+
                         System.out.print("\nEnter the amount to transfer: ");
                         BigDecimal transferAmount = CustomExceptions.getDecimalCheckException(scanner);
                         scanner.nextLine();
@@ -194,6 +198,7 @@ public class Main {
                         System.out.print("\nEnter the account number of the receiver: ");
                         int receiverAccountNumber = CustomExceptions.getIntCheckException(scanner);
                         scanner.nextLine();
+
                         AccountAndUserName receiverDetails = senderAccount
                                 .findAccountByAccountNumber(eurobank.getUsers(), receiverAccountNumber);
                         if (receiverDetails != null) {
