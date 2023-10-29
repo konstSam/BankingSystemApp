@@ -1,7 +1,6 @@
 package BankingSystemApp.database;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,7 +38,7 @@ public class DatabaseBankAccount {
         }
     }
 
-    public static boolean depositAmount(Connection connection, BankAccount depositAccount, int accountNumber, BigDecimal amount) {
+    public static boolean depositAmount(Connection connection, int accountNumber, BigDecimal amount) {
         try {
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("\nInvalid deposit amount");
@@ -139,7 +138,7 @@ public class DatabaseBankAccount {
 
     // method that the user inputs an int that represents an account and it searches
     // for that account if exists
-    public static Integer selectAccount(User user, ArrayList<Integer> accounts, String inputMessage,
+    public static Integer selectAccount(ArrayList<Integer> accounts, String inputMessage,
                                         Scanner scanner) {
         int accountChoice = 0;
         boolean validChoice = false;

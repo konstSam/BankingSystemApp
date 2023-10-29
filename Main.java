@@ -1,11 +1,8 @@
 package BankingSystemApp;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
 import java.util.Scanner;
 
-import BankingSystemApp.BankAccount.AccountAndUserName;
 import BankingSystemApp.database.DatabaseBank;
 import BankingSystemApp.database.DatabaseConnection;
 import BankingSystemApp.database.DatabaseUser;
@@ -17,7 +14,6 @@ import java.sql.Connection;
 
 public class Main {
     public static void main(String[] args) {
-        Bank eurobank = new Bank(1, "eurobank");
 
         Scanner scanner = new Scanner(System.in);
         try {
@@ -58,7 +54,7 @@ public class Main {
                 switch (option) {
                     case 1: // DEPOSIT
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
-                        int depositAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                        int depositAccountNumber = DatabaseBankAccount.selectAccount(
                                 DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to deposit into. Enter the number that represents it:",
                                 scanner);
@@ -70,7 +66,7 @@ public class Main {
                         System.out.print("\nEnter the amount to deposit: ");
                         BigDecimal depositAmount = CustomExceptions.getDecimalCheckException(scanner);
                         scanner.nextLine();
-                        boolean deposited = DatabaseBankAccount.depositAmount(connection, depositAccount, depositAccountNumber, depositAmount);
+                        boolean deposited = DatabaseBankAccount.depositAmount(connection, depositAccountNumber, depositAmount);
                         if (deposited) {
                             depositAccount = DatabaseBankAccount.loadBankAccount(connection, depositAccountNumber);
                             System.out.println(
@@ -82,7 +78,7 @@ public class Main {
 
                     case 2: // WITHDRAW
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
-                        int withdrawAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                        int withdrawAccountNumber = DatabaseBankAccount.selectAccount(
                                 DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to withraw. Enter the number that represents it:",
                                 scanner);
@@ -108,7 +104,7 @@ public class Main {
                     case 3: // CHECK BALANCE
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
 
-                        int checkAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                        int checkAccountNumber = DatabaseBankAccount.selectAccount(
                                 DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to check balance. Enter the number that represents it:",
                                 scanner);
@@ -121,7 +117,7 @@ public class Main {
 
                     case 4: // CONVERT CURRENCY
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
-                        int conversionAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                        int conversionAccountNumber = DatabaseBankAccount.selectAccount(
                                 DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to convert from. Enter the number that represents it:",
                                 scanner);
@@ -140,7 +136,7 @@ public class Main {
                         System.out.printf("Available Balance %s. Enter amount to convert: ",
                                 conversionAccount.checkBalance().setScale(2, RoundingMode.HALF_UP));
                         BigDecimal amount = CustomExceptions.getDecimalCheckException(scanner);
-                        BigDecimal rates[] = Converter.getExchangeRates(amount, sourceCurrency, targetCurrency,
+                        BigDecimal[] rates = Converter.getExchangeRates(amount, sourceCurrency, targetCurrency,
                                 scanner);
                         System.out.printf("Exchange rate: %.3f. Converted amount: %.3f %s", rates[0], rates[1],
                                 targetCurrency);
@@ -166,7 +162,7 @@ public class Main {
                                     break;
                                 }
 
-                                int convertedAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                                int convertedAccountNumber = DatabaseBankAccount.selectAccount(
                                         DatabaseBankAccount.getListOfAccounts(currentUser, connection, targetCurrency),
                                         "\nSelect account to transfer: ",
                                         scanner);
@@ -174,7 +170,7 @@ public class Main {
                                 boolean conversion = DatabaseBankAccount.withdrawAmount(connection, conversionAccount, conversionAccountNumber, amount);
                                 if (conversion) {
                                     System.out.println("Withdrawn " + amount.toPlainString() + " " + conversionAccount.getCurrencyType());
-                                    boolean converted = DatabaseBankAccount.depositAmount(connection, conversionAccount, convertedAccountNumber, rates[1]);
+                                    boolean converted = DatabaseBankAccount.depositAmount(connection, convertedAccountNumber, rates[1]);
                                     System.out.println(converted ? "Transfer was successful!" : "Transfer failed.");
                                     System.out.printf("Converted %.3f %s to %.3f %s with Exchange rate: %.3f ", amount, conversionAccount.getCurrencyType(), rates[1],
                                             targetCurrency, rates[0]);
@@ -185,7 +181,7 @@ public class Main {
 
                     case 5: // TRANSFER TO ANOTHER ACCOUNT
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection, "full");
-                        int senderAccountNumber = DatabaseBankAccount.selectAccount(currentUser,
+                        int senderAccountNumber = DatabaseBankAccount.selectAccount(
                                 DatabaseBankAccount.getListOfAccounts(currentUser, connection, "full"),
                                 "\nChoose the account to transfer from. Enter the number that represents it:",
                                 scanner);
@@ -221,7 +217,7 @@ public class Main {
                                     System.out.println(
                                             "New Balance: " + senderAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + senderAccount.getCurrencyType());
                                 }
-                                boolean received = DatabaseBankAccount.depositAmount(connection, receiverAccount, receiverAccountNumber, transferAmount);
+                                boolean received = DatabaseBankAccount.depositAmount(connection, receiverAccountNumber, transferAmount);
                                 System.out.println(received ? "Transfer was successful!" : "Transfer failed.");
                             }
                         } else {
@@ -246,6 +242,7 @@ public class Main {
                     case 7:
                         System.out.println("Thank you for using our banking system. Goodbye!");
                         scanner.close();
+                        DatabaseConnection.closeConnection(connection);
                         return;
 
                     default:
@@ -257,7 +254,6 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             scanner.close();
-            return;
         } finally {
             scanner.close(); // Close the scanner in the finally block
         }
