@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 import BankingSystemApp.BankAccount.AccountAndUserName;
+import BankingSystemApp.database.DatabaseBank;
 import BankingSystemApp.database.DatabaseConnection;
 import BankingSystemApp.database.DatabaseUser;
 import BankingSystemApp.database.DatabaseBankAccount;
@@ -118,14 +119,18 @@ public class Main {
                                 .println("Balance: " + currentAccount.checkBalance().setScale(2, RoundingMode.HALF_UP) + " " + currentAccount.getCurrencyType());
                         break;
 
-                    case 4:
+                    case 4: // CONVERT CURRENCY
                         DatabaseBankAccount.displayAllUserAccounts(currentUser, connection);
+
+
                         BankAccount conversionAccount = chooseAccount(currentUser, currentUser.getAccounts(),
                                 "\nChoose the account to convert from. Enter the number that represents it: ",
                                 scanner);
                         scanner.nextLine();
                         // Print information about the selected account
                         conversionAccount.getAccountDetails();
+
+
                         String sourceCurrency = conversionAccount.getCurrencyType();
                         System.out.printf("Your account is %s. Choose currency to convert (e.g. USD): ",
                                 sourceCurrency);
@@ -243,16 +248,15 @@ public class Main {
 
                         break;
 
-                    case 6:
-                        Random random = new Random();
+                    case 6: // CREATE NEW ACCOUNT
                         System.out.println("Enter the currency type for your account: ");
                         String currencytype = Converter.validateCurrency(scanner);
                         System.out.println("Enter the account type for your account: ");
                         String accounttype = scanner.nextLine();
-                        BankAccount account1 = new BankAccount(random.nextInt(100000), currencytype, accounttype,
-                                new BigDecimal("0"));
-                        currentUser.addAccount(account1);
-                        System.out.println("Account created successfully");
+
+                        Bank currentBank = DatabaseBank.findBankByUser(connection, currentUser);
+                        boolean created = DatabaseBankAccount.createBankAccount(connection, currentUser, currencytype,accounttype,currentBank);
+                        System.out.println(created ? "New account created successfully!" : "Error creating new account.");
                         break;
 
                     case 7:

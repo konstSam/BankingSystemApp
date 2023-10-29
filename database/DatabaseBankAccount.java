@@ -16,7 +16,7 @@ import BankingSystemApp.BankAccount;
 import BankingSystemApp.CustomExceptions;
 
 public class DatabaseBankAccount {
-    public static void createBankAccount(Connection connection, User user, String currencyType, String accountType,
+    public static boolean createBankAccount(Connection connection, User user, String currencyType, String accountType,
                                          Bank bank) {
         try {
             Random random = new Random();
@@ -31,10 +31,11 @@ public class DatabaseBankAccount {
             statement.setInt(5, user.getUserID());
             statement.setInt(6, bank.getBankID());
             statement.executeUpdate();
-            System.out.println("New account created.");
+            return true;
         } catch (SQLException e) {
             System.out.println("Error creating new account.");
             e.printStackTrace();
+            return false;
         }
     }
 
