@@ -10,10 +10,7 @@ public class Main {
         Connection connection = DatabaseConnection.getConnection();
         Scanner scanner = new Scanner(System.in);
         try {
-            // Create a Scanner for user input
             User currentUser = Methods.login(connection, scanner);;
-
-            // Display user's accounts
             System.out.println("Welcome, " + currentUser.getName() + "!");
             boolean isRunning = true;
             // Provide options for transactions
@@ -52,7 +49,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
-            scanner.close(); // Close the scanner in the "finally" block
+            scanner.close();
             DatabaseConnection.closeConnection(connection);
         }
     }
