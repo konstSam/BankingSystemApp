@@ -35,3 +35,11 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (`accountNumber`) REFERENCES bankaccount(`accountNumber`)
 );
 
+CREATE TABLE IF NOT EXISTS auth (
+    `userid` INT AUTO_INCREMENT PRIMARY KEY,
+    `userName` VARCHAR(50) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
+    FOREIGN KEY (`userid`) REFERENCES `user`(`userid`)
+);
+
+
