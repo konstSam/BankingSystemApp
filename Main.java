@@ -10,7 +10,7 @@ public class Main {
         Connection connection = DatabaseConnection.getConnection();
         Scanner scanner = new Scanner(System.in);
         try {
-            User currentUser = Methods.login(connection, scanner);;
+            User currentUser = Methods.loginUser(connection, scanner);;
             System.out.println("Welcome, " + currentUser.getName() + "!");
             boolean isRunning = true;
             // Provide options for transactions

@@ -1,10 +1,13 @@
 package BankingSystemApp.database;
 
 import BankingSystemApp.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -21,21 +24,43 @@ public class Methods {
         System.out.println("7. Exit");
     }
 
-    public static User login(Connection connection, Scanner scanner) {
+    public static User loginUser(Connection connection, Scanner scanner){
         User currentUser = null;
         boolean userExists = false;
 
         while (!userExists) {
-            System.out.print("Enter your username: ");
-            String username = scanner.nextLine();
-            currentUser = DatabaseUser.findUserByUsername(connection, username);
-            if (currentUser != null) {
-                userExists = true;
-            } else {
-                System.out.println("User not found. Try again.");
+            try {
+                System.out.print("Enter your username: ");
+                String username = scanner.nextLine();
+                System.out.print("Enter your password: ");
+                String password = scanner.nextLine();
+
+                String query = "SELECT password FROM auth WHERE userName = ?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, username);
+
+                ResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    String hashedPassword = resultSet.getString("password");
+                    // Verify the entered password against the hashed password in the database
+
+                    currentUser = DatabaseUser.findUserByUsername(connection, username);
+                    if (currentUser != null && BCrypt.checkpw(password, hashedPassword)) {
+                        // Authentication successful
+                        userExists = true;
+                        System.out.println("Login successful.");
+                        return currentUser;
+                    } else {
+                        System.out.println("Login failed. Try again.");
+                    }
+                } else {
+                    System.out.println("User not found. Try again.");
+                }
+            } catch(Exception e){
+                e.printStackTrace();
             }
         }
-        return currentUser;
+        return null;
     }
 
     public static void exit(Connection connection, Scanner scanner) {
