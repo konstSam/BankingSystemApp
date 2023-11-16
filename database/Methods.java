@@ -91,7 +91,7 @@ public class Methods {
             assert depositAccount != null;
             System.out.println(
                     "New Balance: " + depositAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + depositAccount.getCurrencyType());
-            createTransaction(connection, depositAccountNumber, "Deposit",depositAmount);
+            createTransaction(connection, depositAccountNumber, "Deposit", depositAccountNumber, depositAmount, depositAccount.getCurrencyType(), depositAmount, depositAccount.getCurrencyType());
         } else {
             System.out.println("Deposit failed.");
         }
@@ -118,7 +118,7 @@ public class Methods {
             assert withdrawAccount != null;
             System.out.println(
                     "New Balance: " + withdrawAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + withdrawAccount.getCurrencyType());
-            createTransaction(connection, withdrawAccountNumber, "Withdrawal",withdrawalAmount);
+            createTransaction(connection, withdrawAccountNumber, "Withdrawal", withdrawAccountNumber, withdrawalAmount, withdrawAccount.getCurrencyType(), withdrawalAmount, withdrawAccount.getCurrencyType());
         } else {
             System.out.println("Withdrawal failed.");
         }
@@ -200,8 +200,7 @@ public class Methods {
                     System.out.println(converted ? "Transfer was successful!" : "Transfer failed.");
                     System.out.printf("Converted %.3f %s to %.3f %s with Exchange rate: %.3f ", amount, conversionAccount.getCurrencyType(), rates[1],
                             targetCurrency, rates[0]);
-                    createTransaction(connection, conversionAccountNumber, "Withdrawal",amount);
-                    createTransaction(connection, convertedAccountNumber, "Deposit",rates[1]);
+                    createTransaction(connection, conversionAccountNumber, "Transfer", convertedAccountNumber, amount, conversionAccount.getCurrencyType(), rates[1], targetCurrency);
                 }
             }
         }
@@ -272,12 +271,11 @@ public class Methods {
             senderAccount = DatabaseBankAccount.loadBankAccount(connection, senderAccountNumber);
             assert senderAccount != null;
             System.out.println("New Balance: " + senderAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + senderAccount.getCurrencyType());
-            createTransaction(connection, senderAccountNumber, "Withdrawal",transferAmount);
         }
 
         boolean received = DatabaseBankAccount.depositAmount(connection, receiverAccountNumber, transferAmount);
         System.out.println(received ? "Transfer was successful!" : "Transfer failed.");
-        createTransaction(connection, receiverAccountNumber, "Depost",transferAmount);
+        createTransaction(connection, senderAccountNumber, "Transfer", receiverAccountNumber, transferAmount, senderAccount.getCurrencyType(), transferAmount, senderAccount.getCurrencyType());
     }
 
     public static void handleDifferentCurrencyTransfer(Connection connection, BankAccount senderAccount, int senderAccountNumber, BankAccount receiverAccount, int receiverAccountNumber, BigDecimal transferAmount, Scanner scanner) {
@@ -297,12 +295,11 @@ public class Methods {
                 senderAccount =  DatabaseBankAccount.loadBankAccount(connection, senderAccountNumber);
                 assert senderAccount != null;
                 System.out.println("New Balance: " + senderAccount.getBalance().setScale(2, RoundingMode.HALF_UP) + " " + senderAccount.getCurrencyType());
-                createTransaction(connection, senderAccountNumber, "Withdrawal",transferAmount);
             }
 
             boolean received = DatabaseBankAccount.depositAmount(connection, receiverAccountNumber, transferRate[1]);
             System.out.println(received ? "Transfer was successful!" : "Transfer failed.");
-            createTransaction(connection, receiverAccountNumber, "Deposit",transferRate[1]);
+            createTransaction(connection, senderAccountNumber, "Transfer", receiverAccountNumber, transferAmount, senderAccount.getCurrencyType(), transferRate[1], receiverAccount.getCurrencyType());
         }
     }
 
@@ -336,13 +333,18 @@ public class Methods {
         return accounts.get(accountChoice - 1);
     }
 
-    public static boolean createTransaction(Connection connection, int accountNumber, String transactionType, BigDecimal amount) {
+    public static boolean createTransaction(Connection connection, int userAccountNumber, String transactionType, int receiverAccountNumber, BigDecimal originalAmount, String originalCurrency, BigDecimal receivedAmount, String receivedCurrency) {
         try {
-            String insertTransactionSQL = "INSERT INTO transactions (accountNumber, transactionType, amount, date) VALUES (?, ?, ?, NOW())";
+            String insertTransactionSQL = "INSERT INTO transactions (fromAccountNumber, transactionType, originalAmount, originalCurrency, toAccountNumber, receivedAmount, receivedCurrency, date) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
             PreparedStatement statement = connection.prepareStatement(insertTransactionSQL);
-            statement.setInt(1, accountNumber);
+            statement.setInt(1, userAccountNumber);
             statement.setString(2, transactionType);
-            statement.setBigDecimal(3, amount);
+            statement.setBigDecimal(3, originalAmount);
+            statement.setString(4, originalCurrency);
+            statement.setInt(5, receiverAccountNumber);
+            statement.setBigDecimal(6, receivedAmount);
+            statement.setString(7, receivedCurrency);
+
 
             // Execute the SQL statement to insert the transaction record
             int rowsInserted = statement.executeUpdate();

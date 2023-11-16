@@ -28,11 +28,16 @@ CREATE TABLE IF NOT EXISTS bankaccount (
 
 CREATE TABLE IF NOT EXISTS transactions (
     `transactionid` INT AUTO_INCREMENT PRIMARY KEY,
-    `accountNumber` INT,
-    `transactionType` VARCHAR(255) NOT NULL,
-    `amount` FLOAT NOT NULL,
-    `date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`accountNumber`) REFERENCES bankaccount(`accountNumber`)
+    `fromAccountNumber` INT NOT NULL,
+    `transactionType` ENUM('Deposit', 'Withdrawal', 'Transfer') NOT NULL,
+    `originalAmount` FLOAT NOT NULL,
+    `originalCurrency` VARCHAR(3) NOT NULL,
+    `toAccountNumber` int,
+    `receivedAmount` FLOAT NOT NULL,
+    `receivedCurrency` VARCHAR(3) NOT NULL,
+    `date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (`fromAccountNumber`) REFERENCES bankaccount(`accountNumber`),
+    FOREIGN KEY (`toAccountNumber`) REFERENCES bankaccount(`accountNumber`);
 );
 
 CREATE TABLE IF NOT EXISTS auth (
